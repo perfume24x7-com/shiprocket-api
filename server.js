@@ -25,7 +25,14 @@ async function getToken() {
 }
 
 // Call once when server starts
-getToken();
+app.get("/get-token", async (req, res) => {
+  try {
+    await getToken();
+    res.send("Token generated");
+  } catch (err) {
+    res.status(500).send("Error generating token");
+  }
+});
 
 // 🧪 Test route
 app.get("/", (req, res) => {
