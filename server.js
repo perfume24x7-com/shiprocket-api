@@ -33,6 +33,34 @@ app.get("/get-token", async (req, res) => {
     res.status(500).send("Error generating token");
   }
 });
+// 📦 Check Pincode Serviceability
+app.get("/check-pincode", async (req, res) => {
+  const pincode = req.query.pincode;
+
+  if (!pincode) {
+    return res.status(400).json({ error: "Pincode is required" });
+  }
+
+  try {
+    if (!shiprocketToken) {
+      await getToken();
+    }
+
+    const response = await axios.get(
+      `https://apiv2.shiprocket.in/v1/external/courier/serviceability/?pickup_postcode=500081&delivery_postcode=${pincode}&cod=1&weight=0.5`,
+      {
+        headers: {
+          Authorization: `Bearer ${shiprocketToken}`,
+        },
+      }
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ error: "Failed to fetch serviceability" });
+  }
+});
 
 // 🧪 Test route
 app.get("/", (req, res) => {
