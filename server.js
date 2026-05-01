@@ -6,11 +6,11 @@ app.use(express.json());
 
 let shiprocketToken = "";
 
-// 🔐 Login to Shiprocket
+// 🔐 Login to Shiprocket (GET FRESH TOKEN EVERY TIME)
 async function getToken() {
   try {
     console.log("EMAIL:", process.env.SHIPROCKET_EMAIL);
-console.log("PASSWORD:", process.env.SHIPROCKET_PASSWORD);
+
     const response = await axios.post(
       "https://apiv2.shiprocket.in/v1/external/auth/login",
       {
@@ -20,59 +20,64 @@ console.log("PASSWORD:", process.env.SHIPROCKET_PASSWORD);
     );
 
     shiprocketToken = response.data.token;
-    console.log("Token Generated");
+    console.log("✅ Token Generated");
   } catch (error) {
-    console.log("Error generating token", error.message);
+    console.log(
+      "❌ Error generating token:",
+      error.response?.data || error.message
+    );
+    throw error;
   }
 }
 
-// Call once when server starts
-app.get("/get-token", async (req, res) => {
-  try {
-    await getToken();
-    res.send("Token generated");
-  } catch (err) {
-    res.status(500).send("Error generating token");
-  }
-});
 // 📦 Check Pincode Serviceability
 app.get("/check-pincode", async (req, res) => {
   try {
     const pincode = req.query.pincode;
 
-    const token = await getToken(); // ALWAYS fresh token
+    if (!pincode) {
+      return res.status(400).json({ error: "Pincode is required" });
+    }
+
+    // 🔥 ALWAYS GET FRESH TOKEN (IMPORTANT FIX)
+    await getToken();
+
+    console.log("🔑 TOKEN USED:", shiprocketToken);
 
     const response = await axios.get(
       "https://apiv2.shiprocket.in/v1/external/courier/serviceability/",
       {
+        headers: {
+          Authorization: `Bearer ${shiprocketToken}`,
+        },
         params: {
           pickup_postcode: "500082",
           delivery_postcode: pincode,
           cod: 1,
-          weight: 0.5
+          weight: 0.5,
         },
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
       }
     );
 
     res.json(response.data);
-
-  } catch (error) {
-    console.log("ERROR:", error.response?.data || error.message);
+  } catch (err) {
+    console.log(
+      "❌ ERROR:",
+      err.response?.data || err.message
+    );
     res.status(500).json({
-      error: error.response?.data || error.message
+      error: err.response?.data || "Failed to fetch serviceability",
     });
   }
 });
-// 🧪 Test route
+
+// 🧪 Health check
 app.get("/", (req, res) => {
-  res.send("Shiprocket API Connected");
+  res.send("Shiprocket API Connected ✅");
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
