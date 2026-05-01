@@ -38,22 +38,19 @@ app.get("/check-pincode", async (req, res) => {
   try {
     const pincode = req.query.pincode;
 
-    // Ensure token exists
-    if (!shiprocketToken) {
-      await getToken();
-    }
+    const token = await getToken(); // ALWAYS fresh token
 
     const response = await axios.get(
-      `https://apiv2.shiprocket.in/v1/external/courier/serviceability/`,
+      "https://apiv2.shiprocket.in/v1/external/courier/serviceability/",
       {
         params: {
-          pickup_postcode: "500082", // your warehouse pincode
+          pickup_postcode: "500082",
           delivery_postcode: pincode,
           cod: 1,
           weight: 0.5
         },
         headers: {
-          Authorization: `Bearer ${shiprocketToken}`
+          Authorization: `Bearer ${token}`
         }
       }
     );
