@@ -12,8 +12,8 @@ async function getToken() {
     const response = await axios.post(
       "https://apiv2.shiprocket.in/v1/external/auth/login",
       {
-        email: dhiraj@perfume24x7.com,
-        password: Yua8*bntwR7pLhR2LOJHz7W%vluMr&x@,
+        email: "dhiraj@perfume24x7.com",
+        password: "Yua8*bntwR7pLhR2LOJHz7W%vluMr&x@",
       }
     );
 
