@@ -9,6 +9,8 @@ let shiprocketToken = "";
 // 🔐 Login to Shiprocket
 async function getToken() {
   try {
+    console.log("EMAIL:", process.env.SHIPROCKET_EMAIL);
+console.log("PASSWORD:", process.env.SHIPROCKET_PASSWORD);
     const response = await axios.post(
       "https://apiv2.shiprocket.in/v1/external/auth/login",
       {
